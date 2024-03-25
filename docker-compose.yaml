@@ -1,0 +1,89 @@
+version: '3.8'
+name: api
+
+services:
+  db-api:
+    container_name: api-db-api
+    image: postgres:latest
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_USER=api
+      - POSTGRES_PASSWORD=api
+      - POSTGRES_DB=api
+    volumes:
+      - $VOLUME/postgres/api/data:/var/lib/postgresql/data
+    restart: always
+    networks:
+      - private-network
+
+  discovery:
+    build:
+      context: ../insper.api.discovery/
+      dockerfile: Dockerfile
+    container_name: api-discovery
+    image: api-discovery:latest
+    ports:
+      - 8761:8761
+    restart: always
+    networks:
+      - private-network
+
+  gateway:
+    build:
+      context: ../insper.api.gateway/
+      dockerfile: Dockerfile
+    container_name: api-gateway
+    image: api-gateway:latest
+    ports:
+      - 8080:8080
+    environment:
+      - eureka.client.service-url.defaultZone=http://api-discovery:8761/eureka/
+    networks:
+      - private-network
+    depends_on:
+      - discovery
+
+  account:
+    build:
+      context: ../insper.api.account-resource/
+      dockerfile: Dockerfile
+    image: api-account:latest
+    environment:
+      - spring.datasource.url=jdbc:postgresql://api-db-api:5432/api
+      - spring.datasource.username=api
+      - spring.datasource.password=api
+      - eureka.client.service-url.defaultZone=http://api-discovery:8761/eureka/
+    deploy:
+      mode: replicated
+      replicas: 1
+    restart: always
+    networks:
+      - private-network
+
+    depends_on:
+      - db-api
+      - discovery
+
+  auth:
+    build:
+      context: ../insper.api.auth-resource/
+      dockerfile: Dockerfile
+    image: api-auth:latest
+    # ports:
+    #   - 8080:8080
+    environment:
+      - eureka.client.service-url.defaultZone=http://api-discovery:8761/eureka/
+    deploy:
+      mode: replicated
+      replicas: 1
+    networks:
+      - private-network
+    depends_on:
+      - discovery
+      - account
+
+
+networks:
+  private-network:
+    driver: bridge

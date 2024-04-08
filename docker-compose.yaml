@@ -82,8 +82,27 @@ services:
     depends_on:
       - discovery
       - account
-
-
+  ###
+  receitas:
+    build:
+      context: ../insper.api.receitas-resource/
+      dockerfile: Dockerfile
+    image: api-receitas:latest
+    ports:
+      - 8085:8085
+    environment:
+      - spring.datasource.url=jdbc:postgresql://api-db-api:5432/api
+      - spring.datasource.username=api
+      - spring.datasource.password=api
+      - eureka.client.service-url.defaultZone=http://api-receitas:8761/eureka/
+    deploy:
+      mode: replicated
+      replicas: 1
+    networks:
+      - private-network
+    depends_on:
+      - discovery
+    ###
 networks:
   private-network:
     driver: bridge

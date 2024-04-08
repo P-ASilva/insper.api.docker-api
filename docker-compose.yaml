@@ -102,7 +102,28 @@ services:
       - private-network
     depends_on:
       - discovery
-    ###
+  ###
+  ###
+  ingredientes:
+    build:
+      context: ../insper.api.ingredientes-resource/
+      dockerfile: Dockerfile
+    image: api-ingredientes:latest
+    ports:
+      - 8086:8086
+    environment:
+      - spring.datasource.url=jdbc:postgresql://api-db-api:5432/api
+      - spring.datasource.username=api
+      - spring.datasource.password=api
+      - eureka.client.service-url.defaultZone=http://api-ingredientes:8761/eureka/
+    deploy:
+      mode: replicated
+      replicas: 1
+    networks:
+      - private-network
+    depends_on:
+      - discovery
+  ###
 networks:
   private-network:
     driver: bridge

@@ -94,7 +94,7 @@ services:
       - spring.datasource.url=jdbc:postgresql://api-db-api:5432/api
       - spring.datasource.username=api
       - spring.datasource.password=api
-      - eureka.client.service-url.defaultZone=http://api-receitas:8761/eureka/
+      - eureka.client.service-url.defaultZone=http://api-discovery:8761/eureka/
     deploy:
       mode: replicated
       replicas: 1
@@ -102,6 +102,7 @@ services:
       - private-network
     depends_on:
       - discovery
+      - ingredientes
   ###
   ###
   ingredientes:
@@ -115,7 +116,7 @@ services:
       - spring.datasource.url=jdbc:postgresql://api-db-api:5432/api
       - spring.datasource.username=api
       - spring.datasource.password=api
-      - eureka.client.service-url.defaultZone=http://api-ingredientes:8761/eureka/
+      - eureka.client.service-url.defaultZone=http://api-discovery:8761/eureka/
     deploy:
       mode: replicated
       replicas: 1
